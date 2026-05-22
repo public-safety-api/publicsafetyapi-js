@@ -1,0 +1,40 @@
+{
+  "name": "publicsafetyapi-sdk",
+  "version": "0.1.0",
+  "description": "Official Node.js SDK for publicsafetyapi.dev — US police stations, fire stations, hospitals, and EMS locations. Install: npm i publicsafetyapi-sdk",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "test": "node test/smoke.js"
+  },
+  "keywords": [
+    "public-safety",
+    "police",
+    "fire-station",
+    "hospital",
+    "ems",
+    "hifld",
+    "api",
+    "sdk",
+    "geocoding"
+  ],
+  "author": "PublicSafetyAPI <hello@publicsafetyapi.dev>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/public-safety-api/publicsafetyapi-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/public-safety-api/publicsafetyapi-js/issues"
+  },
+  "homepage": "https://publicsafetyapi.dev",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md",
+    "LICENSE"
+  ]
+}
