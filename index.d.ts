@@ -74,6 +74,46 @@ export interface JurisdictionResult {
   jurisdictionNote: string;
 }
 
+export interface StateListItem {
+  state: string;
+  policeStations?: number;
+  fireStations?: number;
+  emsStations?: number;
+  hospitals?: number;
+  totalFacilities?: number;
+}
+
+export interface StatesListResponse {
+  data: StateListItem[];
+  meta: ResponseMeta;
+}
+
+export interface StateFacilities {
+  policeStations?: number;
+  fireStations?: number;
+  emsStations?: number;
+  hospitals?: number;
+  total?: number;
+}
+
+export interface StateHospitals {
+  totalLicensedBeds?: number;
+  traumaCenters?: number;
+}
+
+export interface StateSummary {
+  state: string;
+  dataVersion?: string;
+  facilities?: StateFacilities;
+  hospitals?: StateHospitals;
+}
+
+export interface HealthResponse {
+  status: string;
+  db?: boolean;
+  source?: { dataVersion?: string; updatedAt?: string; freshnessDays?: number };
+}
+
 export interface ListOptions {
   type?: EntityType | EntityType[];
   state?: string;
@@ -111,8 +151,15 @@ export declare class StationsResource {
   nearby(options: NearbyOptions): Promise<StationsResponse>;
 }
 
+export declare class StatesResource {
+  list(): Promise<StatesListResponse>;
+  summary(code: string): Promise<StateSummary>;
+}
+
 export declare class PublicSafetyAPI {
   stations: StationsResource;
+  states: StatesResource;
   constructor(options: { apiKey: string; baseUrl?: string });
   jurisdiction(options: JurisdictionOptions): Promise<JurisdictionResult>;
+  health(): Promise<HealthResponse>;
 }

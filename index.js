@@ -1,36 +1,37 @@
 /**
- * publicsafetyapi-sdk
+ * publicsafetyapi
  * Official Node.js SDK for publicsafetyapi.dev
  *
  * US public safety facility data — police stations, fire stations,
  * hospitals, and EMS locations — from HIFLD (DHS/CISA) and CMS.
  *
- * Full SDK implementation ships with v0.2.0 alongside the API launch.
- * Sign up for early access at https://publicsafetyapi.dev
- *
  * @example
- * const { PublicSafetyAPI } = require('publicsafetyapi-sdk');
+ * const { PublicSafetyAPI } = require('publicsafetyapi');
  * const client = new PublicSafetyAPI({ apiKey: 'psk_live_...' });
  *
  * // Nearest fire stations to any US address
- * const stations = await client.stations.nearby({
+ * const { data } = await client.stations.nearby({
  *   address: '12865 Main St, Apple Valley, CA',
  *   type: 'fire',
  *   radiusMiles: 10
  * });
- * console.log(stations[0].name, stations[0].distanceMiles);
+ * console.log(data[0].name, data[0].distanceMiles);
  *
  * // Jurisdiction lookup
  * const result = await client.jurisdiction({
  *   address: '12865 Main St, Apple Valley, CA',
  *   type: 'police'
  * });
- * console.log(result.likelyAgencies[0].name); // "Apple Valley Police Department"
+ * console.log(result.data.likelyAgencies[0].name); // "Apple Valley Police Department"
+ *
+ * // State-level rollups
+ * const states = await client.states.list();
+ * const ca = await client.states.summary('CA');
  */
 
 'use strict';
 
-const VERSION = '0.1.0';
+const VERSION = '0.2.0';
 const BASE_URL = 'https://api.publicsafetyapi.dev';
 
 class PublicSafetyAPIError extends Error {
@@ -48,6 +49,7 @@ class PublicSafetyAPI {
     this._apiKey = apiKey;
     this._baseUrl = baseUrl;
     this.stations = new StationsResource(this);
+    this.states = new StatesResource(this);
   }
 
   async _request(path, params = {}) {
@@ -58,7 +60,7 @@ class PublicSafetyAPI {
     const res = await fetch(url.toString(), {
       headers: {
         Authorization: `Bearer ${this._apiKey}`,
-        'User-Agent': `publicsafetyapi-sdk-js/${VERSION}`,
+        'User-Agent': `publicsafetyapi-js/${VERSION}`,
       },
     });
     const body = await res.json();
@@ -75,6 +77,11 @@ class PublicSafetyAPI {
   async jurisdiction({ address, lat, lng, type } = {}) {
     return this._request('/v1/jurisdiction', { address, lat, lng, type });
   }
+
+  /** Service health. Does not require a valid API key and consumes no credits. */
+  async health() {
+    return this._request('/v1/health');
+  }
 }
 
 class StationsResource {
@@ -87,7 +94,8 @@ class StationsResource {
   }
 
   async get(stationId) {
-    return this._client._request(`/v1/stations/${stationId}`);
+    const body = await this._client._request(`/v1/stations/${stationId}`);
+    return body.data;
   }
 
   async nearby({ address, lat, lng, type, radiusMiles, limit } = {}) {
@@ -96,6 +104,23 @@ class StationsResource {
       radius_miles: radiusMiles,
       limit,
     });
+  }
+}
+
+class StatesResource {
+  constructor(client) {
+    this._client = client;
+  }
+
+  /** List all states with facility counts. Returns the full envelope ({ data, meta }). */
+  async list() {
+    return this._client._request('/v1/states');
+  }
+
+  /** State-level facility + hospital rollup for a two-letter state code. */
+  async summary(code) {
+    const body = await this._client._request(`/v1/states/${String(code).toUpperCase()}/summary`);
+    return body.data;
   }
 }
 
