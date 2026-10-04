@@ -34,6 +34,24 @@
 const VERSION = '0.2.0';
 const BASE_URL = 'https://api.publicsafetyapi.dev';
 
+// Identifiers are interpolated into the request path, and the URL parser
+// collapses ".." segments, so an unvalidated id such as
+// "../../v2/internal/admin" would send the request, with the caller's API
+// key, to a different path on the API host; "?" and "#" would inject a query
+// string or fragment. Allowlist rather than blocklist: every real identifier
+// is alphanumeric with optional "-"/"_".
+const SAFE_ID = /^[A-Za-z0-9_-]{1,64}$/;
+
+/** Return the identifier as a string, or throw if it could escape the path. */
+function safeId(value, field) {
+  const id = typeof value === 'number' ? String(value) : value;
+  if (typeof id !== 'string' || !SAFE_ID.test(id)) {
+    const shown = typeof value === 'string' ? JSON.stringify(value) : typeof value;
+    throw new TypeError(`${field} must contain only letters, digits, '-' or '_' (got ${shown})`);
+  }
+  return id;
+}
+
 class PublicSafetyAPIError extends Error {
   constructor(message, code, status) {
     super(message);
@@ -94,7 +112,7 @@ class StationsResource {
   }
 
   async get(stationId) {
-    const body = await this._client._request(`/v1/stations/${stationId}`);
+    const body = await this._client._request(`/v1/stations/${safeId(stationId, 'stationId')}`);
     return body.data;
   }
 
@@ -119,7 +137,7 @@ class StatesResource {
 
   /** State-level facility + hospital rollup for a two-letter state code. */
   async summary(code) {
-    const body = await this._client._request(`/v1/states/${String(code).toUpperCase()}/summary`);
+    const body = await this._client._request(`/v1/states/${safeId(code, 'code').toUpperCase()}/summary`);
     return body.data;
   }
 }
