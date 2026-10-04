@@ -31,7 +31,7 @@
 
 'use strict';
 
-const VERSION = '0.2.0';
+const VERSION = '0.2.1';
 const BASE_URL = 'https://api.publicsafetyapi.dev';
 
 // Identifiers are interpolated into the request path, and the URL parser

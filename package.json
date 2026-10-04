@@ -1,6 +1,6 @@
 {
   "name": "publicsafetyapi",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Official Node.js SDK for publicsafetyapi.dev — US police stations, fire stations, hospitals, and EMS locations. Install: npm i publicsafetyapi",
   "main": "index.js",
   "types": "index.d.ts",
